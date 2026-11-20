@@ -56,6 +56,7 @@ final class external_test extends \advanced_testcase {
         $this->assertSame(1, $r['enabled']);
         $this->assertSame([['filename' => 'Lösung.pdf', 'filesize' => 6]], $r['files']);
         $this->assertSame($due + HOURSECS, $r['releasefrom']);
+        $this->assertSame(1, $r['requiresubmission']);   // Site default.
 
         // Only the release changes, the files stay.
         $r = external_api::clean_returnvalue(set_solution::execute_returns(), set_solution::execute($cmid, [], -1, 2 * HOURSECS));
@@ -67,6 +68,22 @@ final class external_test extends \advanced_testcase {
         $this->setUser($student);
         $this->expectException(\required_capability_exception::class);
         get_solution::execute($cmid);
+    }
+
+    /**
+     * "Only with a submission" needs submission drafts.
+     */
+    public function test_needs_drafts(): void {
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        $teacher = $this->getDataGenerator()->create_and_enrol($course, 'editingteacher');
+        $assign = $this->create_instance($course, ['duedate' => time(), 'submissiondrafts' => 0]);
+        $this->setUser($teacher);
+        $cmid = (int) $assign->get_course_module()->id;
+        $r = set_solution::execute($cmid, [], 2, 0, -1, 0);
+        $this->assertSame(0, $r['requiresubmission']);
+        $this->expectException(\moodle_exception::class);
+        set_solution::execute($cmid, [], -1, -1, -1, 1);
     }
 
     /**

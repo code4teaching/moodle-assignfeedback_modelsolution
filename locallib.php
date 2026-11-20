@@ -105,6 +105,44 @@ class assign_feedback_modelsolution extends assign_feedback_plugin {
     }
 
     /**
+     * Release settings of the site (Site administration → Plugins → Assignment → Feedback plugins → Model solution),
+     * used for new assignments.
+     *
+     * @return array releasetype, releaseoffset, requiresubmission
+     */
+    public static function site_defaults(): array {
+        $type = get_config('assignfeedback_modelsolution', 'defaultreleasetype');
+        $require = get_config('assignfeedback_modelsolution', 'defaultrequiresubmission');
+        return [
+            'releasetype' => $type === false ? self::RELEASE_AFTERDUE : (int) $type,
+            'releaseoffset' => (int) get_config('assignfeedback_modelsolution', 'defaultreleaseoffset'),
+            'requiresubmission' => $require === false ? 1 : (int) $require,
+        ];
+    }
+
+    /**
+     * Whether release settings were saved for this assignment.
+     *
+     * @return bool
+     */
+    public function is_configured(): bool {
+        return $this->get_config('releasetype') !== false;
+    }
+
+    /**
+     * Value for the settings form: saved setting, else the site default.
+     *
+     * @param string $key
+     * @return int
+     */
+    protected function form_default(string $key): int {
+        if ($this->is_configured()) {
+            return (int) $this->get_config($key);
+        }
+        return self::site_defaults()[$key] ?? 0;
+    }
+
+    /**
      * Settings in the assignment form.
      *
      * @param MoodleQuickForm $mform
@@ -126,15 +164,14 @@ class assign_feedback_modelsolution extends assign_feedback_plugin {
             self::release_options()
         );
         $mform->addHelpButton($p . 'releasetype', 'release', 'assignfeedback_modelsolution');
-        $mform->setDefault($p . 'releasetype', $this->get_config('releasetype') === false ? self::RELEASE_AFTERDUE
-            : (int) $this->get_config('releasetype'));
+        $mform->setDefault($p . 'releasetype', $this->form_default('releasetype'));
         $mform->addElement(
             'duration',
             $p . 'releaseoffset',
             get_string('releaseoffset', 'assignfeedback_modelsolution'),
             ['optional' => false, 'defaultunit' => HOURSECS]
         );
-        $mform->setDefault($p . 'releaseoffset', (int) $this->get_config('releaseoffset'));
+        $mform->setDefault($p . 'releaseoffset', $this->form_default('releaseoffset'));
         $mform->hideIf($p . 'releaseoffset', $p . 'releasetype', 'neq', self::RELEASE_AFTERDUE);
         $mform->addElement('date_time_selector', $p . 'releasetime', get_string('releasetime', 'assignfeedback_modelsolution'));
         $mform->setDefault($p . 'releasetime', (int) $this->get_config('releasetime') ?: time() + WEEKSECS);
@@ -145,7 +182,7 @@ class assign_feedback_modelsolution extends assign_feedback_plugin {
             get_string('requiresubmission', 'assignfeedback_modelsolution')
         );
         $mform->addHelpButton($p . 'requiresubmission', 'requiresubmission', 'assignfeedback_modelsolution');
-        $mform->setDefault($p . 'requiresubmission', (int) $this->get_config('requiresubmission'));
+        $mform->setDefault($p . 'requiresubmission', $this->form_default('requiresubmission'));
         $mform->addElement(
             'date_time_selector',
             $p . 'hideafter',
@@ -175,6 +212,9 @@ class assign_feedback_modelsolution extends assign_feedback_plugin {
         $type = (int) ($data[$p . 'releasetype'] ?? self::RELEASE_AFTERDUE);
         if ($type === self::RELEASE_AFTERDUE && empty($data['duedate'])) {
             $errors[$p . 'releasetype'] = get_string('errorneedsduedate', 'assignfeedback_modelsolution');
+        }
+        if (!empty($data[$p . 'requiresubmission']) && empty($data['submissiondrafts'])) {
+            $errors[$p . 'requiresubmission'] = get_string('errorneedsdrafts', 'assignfeedback_modelsolution');
         }
         $hide = (int) ($data[$p . 'hideafter'] ?? 0);
         if ($hide && $type === self::RELEASE_DATE && $hide <= (int) ($data[$p . 'releasetime'] ?? 0)) {
@@ -220,13 +260,16 @@ class assign_feedback_modelsolution extends assign_feedback_plugin {
                 ['subdirs' => 0]
             );
         }
-        $this->save_release([
-            'releasetype' => $formdata->{$p . 'releasetype'} ?? self::RELEASE_AFTERDUE,
-            'releaseoffset' => $formdata->{$p . 'releaseoffset'} ?? 0,
-            'releasetime' => $formdata->{$p . 'releasetime'} ?? 0,
-            'requiresubmission' => $formdata->{$p . 'requiresubmission'} ?? 0,
-            'hideafter' => $formdata->{$p . 'hideafter'} ?? 0,
-        ]);
+        $defaults = $this->is_configured() ? [] : self::site_defaults();
+        $settings = [];
+        foreach (['releasetype', 'releaseoffset', 'releasetime', 'requiresubmission', 'hideafter'] as $key) {
+            if (isset($formdata->{$p . $key})) {
+                $settings[$key] = $formdata->{$p . $key};
+            } else if (!$this->is_configured()) {
+                $settings[$key] = $defaults[$key] ?? 0;
+            }
+        }
+        $this->save_release($settings);
         return true;
     }
 

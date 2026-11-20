@@ -1,5 +1,12 @@
 # Changes
 
+## 1.0.1 (2026-11-20)
+
+* Site defaults for new assignments: release after the due date and only for students who submitted.
+* "Only for students who submitted" needs "Require students to click the submit button"; the assignment form and
+  the web service say so. Otherwise a student could submit anything, look at the model solution and change the
+  submission afterwards.
+
 ## 1.0.0 (2026-11-20)
 
 First release, based on assignfeedback_solutionsheet 4.0.0 by Henning Bostelmann.

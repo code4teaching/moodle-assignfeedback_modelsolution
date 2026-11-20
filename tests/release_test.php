@@ -45,7 +45,7 @@ final class release_test extends \advanced_testcase {
         $assign = $this->create_instance($course, array_merge([
             'assignsubmission_onlinetext_enabled' => 1,
             'assignfeedback_modelsolution_enabled' => 1,
-            'submissiondrafts' => 0,
+            'assignfeedback_modelsolution_requiresubmission' => 0,
         ], $params));
         $plugin = $assign->get_feedback_plugin_by_type('modelsolution');
         get_file_storage()->create_file_from_string(['contextid' => $assign->get_context()->id,
@@ -138,10 +138,32 @@ final class release_test extends \advanced_testcase {
             'assignfeedback_modelsolution_releasetype' => \assign_feedback_modelsolution::RELEASE_AFTERDUE,
             'assignfeedback_modelsolution_requiresubmission' => 1,
         ]);
+        // Ben has only a draft: that does not count.
         $this->add_submission($anna, $assign);
+        $this->submit_for_grading($anna, $assign);
+        $this->add_submission($ben, $assign);
         $this->setAdminUser();
         $this->assertTrue($plugin->can_view($anna->id));
         $this->assertFalse($plugin->can_view($ben->id));
+    }
+
+    /**
+     * Site defaults for new assignments: after the due date, only with a submission, which needs submission drafts.
+     */
+    public function test_site_defaults(): void {
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        $assign = $this->create_instance($course, ['duedate' => time() - DAYSECS, 'assignfeedback_modelsolution_enabled' => 1]);
+        $release = $assign->get_feedback_plugin_by_type('modelsolution')->get_release();
+        $this->assertSame([\assign_feedback_modelsolution::RELEASE_AFTERDUE, 1],
+            [$release['releasetype'], $release['requiresubmission']]);
+        $plugin = $assign->get_feedback_plugin_by_type('modelsolution');
+        $data = ['assignfeedback_modelsolution_enabled' => 1, 'duedate' => time(), 'submissiondrafts' => 0,
+            'assignfeedback_modelsolution_releasetype' => \assign_feedback_modelsolution::RELEASE_AFTERDUE,
+            'assignfeedback_modelsolution_requiresubmission' => 1];
+        $this->assertArrayHasKey('assignfeedback_modelsolution_requiresubmission', $plugin->settings_validation($data, []));
+        $data['submissiondrafts'] = 1;
+        $this->assertSame([], $plugin->settings_validation($data, []));
     }
 
     /**
