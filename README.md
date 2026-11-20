@@ -14,6 +14,8 @@ assignment page – but never before their own due date.
 * Web services `assignfeedback_modelsolution_get_solution` and `assignfeedback_modelsolution_set_solution`
   (used by [VisuDesk](https://visudesk.visucode.de)).
 
+![Settings of the model solution in an assignment](docs/settings.png)
+
 Requires Moodle 5.0 or later.
 
 ## Installation
