@@ -71,7 +71,7 @@ final class release_test extends \advanced_testcase {
             'assignfeedback_modelsolution_releasetype' => \assign_feedback_modelsolution::RELEASE_AFTERDUE,
             'assignfeedback_modelsolution_releaseoffset' => 0,
         ]);
-        $this->assertTrue($plugin->is_enabled());
+        $this->assertTrue((bool) $plugin->is_enabled());
 
         // Ben has an extension, Cem a user override: both later.
         $flags = $assign->get_user_flags($ben->id, true);
