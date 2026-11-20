@@ -50,8 +50,12 @@ class set_solution extends external_api {
             ),
             'releaseoffset' => new external_value(PARAM_INT, 'Seconds after the due date (releasetype 2)', VALUE_DEFAULT, -1),
             'releasetime' => new external_value(PARAM_INT, 'Release date (releasetype 3)', VALUE_DEFAULT, -1),
-            'requiresubmission' => new external_value(PARAM_INT,
-                '1: only students who submitted see it (needs submission drafts)', VALUE_DEFAULT, -1),
+            'requiresubmission' => new external_value(
+                PARAM_INT,
+                '1: only students who submitted see it (needs submission drafts)',
+                VALUE_DEFAULT,
+                -1
+            ),
             'hideafter' => new external_value(PARAM_INT, 'Hidden again from this date, 0 = never', VALUE_DEFAULT, -1),
             'enabled' => new external_value(PARAM_INT, '1 turn on (default), 0 turn off for this assignment', VALUE_DEFAULT, 1),
         ]);

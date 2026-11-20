@@ -155,8 +155,10 @@ final class release_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
         $assign = $this->create_instance($course, ['duedate' => time() - DAYSECS, 'assignfeedback_modelsolution_enabled' => 1]);
         $release = $assign->get_feedback_plugin_by_type('modelsolution')->get_release();
-        $this->assertSame([\assign_feedback_modelsolution::RELEASE_AFTERDUE, 1],
-            [$release['releasetype'], $release['requiresubmission']]);
+        $this->assertSame(
+            [\assign_feedback_modelsolution::RELEASE_AFTERDUE, 1],
+            [$release['releasetype'], $release['requiresubmission']]
+        );
         $plugin = $assign->get_feedback_plugin_by_type('modelsolution');
         $data = ['assignfeedback_modelsolution_enabled' => 1, 'duedate' => time(), 'submissiondrafts' => 0,
             'assignfeedback_modelsolution_releasetype' => \assign_feedback_modelsolution::RELEASE_AFTERDUE,
