@@ -42,8 +42,12 @@ class set_solution extends external_api {
                 'filename' => new external_value(PARAM_FILE, 'File name'),
                 'content' => new external_value(PARAM_RAW, 'File content, base64 encoded'),
             ]), 'Files of the model solution; they replace the current ones. Empty: files stay as they are.', VALUE_DEFAULT, []),
-            'releasetype' => new external_value(PARAM_INT, '0 by hand (hidden), 1 released, 2 after the due date, 3 at a date',
-                VALUE_DEFAULT, -1),
+            'releasetype' => new external_value(
+                PARAM_INT,
+                '0 by hand (hidden), 1 released, 2 after the due date, 3 at a date',
+                VALUE_DEFAULT,
+                -1
+            ),
             'releaseoffset' => new external_value(PARAM_INT, 'Seconds after the due date (releasetype 2)', VALUE_DEFAULT, -1),
             'releasetime' => new external_value(PARAM_INT, 'Release date (releasetype 3)', VALUE_DEFAULT, -1),
             'requiresubmission' => new external_value(PARAM_INT, '1: only students who submitted see it', VALUE_DEFAULT, -1),
@@ -65,11 +69,27 @@ class set_solution extends external_api {
      * @param int $enabled
      * @return array as get_solution
      */
-    public static function execute(int $cmid, array $files = [], int $releasetype = -1, int $releaseoffset = -1,
-            int $releasetime = -1, int $requiresubmission = -1, int $hideafter = -1, int $enabled = 1): array {
+    public static function execute(
+        int $cmid,
+        array $files = [],
+        int $releasetype = -1,
+        int $releaseoffset = -1,
+        int $releasetime = -1,
+        int $requiresubmission = -1,
+        int $hideafter = -1,
+        int $enabled = 1
+    ): array {
         global $CFG, $USER;
-        $params = self::validate_parameters(self::execute_parameters(), compact('cmid', 'files', 'releasetype', 'releaseoffset',
-            'releasetime', 'requiresubmission', 'hideafter', 'enabled'));
+        $params = self::validate_parameters(self::execute_parameters(), compact(
+            'cmid',
+            'files',
+            'releasetype',
+            'releaseoffset',
+            'releasetime',
+            'requiresubmission',
+            'hideafter',
+            'enabled'
+        ));
         [$assign, $plugin] = get_solution::plugin($params['cmid']);
         $context = $assign->get_context();
         require_capability('moodle/course:manageactivities', $context);

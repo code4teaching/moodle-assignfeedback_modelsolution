@@ -82,8 +82,10 @@ class get_solution extends external_api {
      * @return array
      */
     public static function describe(\assign $assign, \assign_feedback_modelsolution $plugin): array {
-        $files = array_values(array_map(fn($f) => ['filename' => $f->get_filename(), 'filesize' => (int) $f->get_filesize()],
-            $plugin->get_files()));
+        $files = array_values(array_map(
+            fn($f) => ['filename' => $f->get_filename(), 'filesize' => (int) $f->get_filesize()],
+            $plugin->get_solution_files()
+        ));
         return array_merge($plugin->get_release(), [
             'cmid' => (int) $assign->get_course_module()->id,
             'enabled' => (int) $plugin->is_enabled(),
@@ -112,8 +114,10 @@ class get_solution extends external_api {
             'requiresubmission' => new external_value(PARAM_INT, '1: only students who submitted see it'),
             'hideafter' => new external_value(PARAM_INT, 'Hidden again from this date, 0 = never'),
             'duedate' => new external_value(PARAM_INT, 'Due date of the assignment, 0 = none'),
-            'releasefrom' => new external_value(PARAM_INT,
-                'When students without an individual due date see it: 0 now, -1 not released, else a timestamp'),
+            'releasefrom' => new external_value(
+                PARAM_INT,
+                'When students without an individual due date see it: 0 now, -1 not released, else a timestamp'
+            ),
         ]);
     }
 }

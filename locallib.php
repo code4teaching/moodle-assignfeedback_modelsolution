@@ -26,8 +26,6 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Model solution feedback plugin.
  *
@@ -36,7 +34,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class assign_feedback_modelsolution extends assign_feedback_plugin {
-
     /** File area of the model solution. */
     const FILEAREA = 'modelsolution';
     /** Hidden until a teacher releases it. */
@@ -82,9 +79,15 @@ class assign_feedback_modelsolution extends assign_feedback_plugin {
      *
      * @return stored_file[]
      */
-    public function get_files(): array {
-        return get_file_storage()->get_area_files($this->assignment->get_context()->id, 'assignfeedback_modelsolution',
-            self::FILEAREA, 0, 'filename', false);
+    public function get_solution_files(): array {
+        return get_file_storage()->get_area_files(
+            $this->assignment->get_context()->id,
+            'assignfeedback_modelsolution',
+            self::FILEAREA,
+            0,
+            'filename',
+            false
+        );
     }
 
     /**
@@ -109,26 +112,46 @@ class assign_feedback_modelsolution extends assign_feedback_plugin {
      */
     public function get_settings(MoodleQuickForm $mform) {
         $p = 'assignfeedback_modelsolution_';
-        $mform->addElement('filemanager', $p . 'upload', get_string('upload', 'assignfeedback_modelsolution'), null,
-            ['subdirs' => 0]);
-        $mform->addElement('select', $p . 'releasetype', get_string('release', 'assignfeedback_modelsolution'),
-            self::release_options());
+        $mform->addElement(
+            'filemanager',
+            $p . 'upload',
+            get_string('upload', 'assignfeedback_modelsolution'),
+            null,
+            ['subdirs' => 0]
+        );
+        $mform->addElement(
+            'select',
+            $p . 'releasetype',
+            get_string('release', 'assignfeedback_modelsolution'),
+            self::release_options()
+        );
         $mform->addHelpButton($p . 'releasetype', 'release', 'assignfeedback_modelsolution');
         $mform->setDefault($p . 'releasetype', $this->get_config('releasetype') === false ? self::RELEASE_AFTERDUE
             : (int) $this->get_config('releasetype'));
-        $mform->addElement('duration', $p . 'releaseoffset', get_string('releaseoffset', 'assignfeedback_modelsolution'),
-            ['optional' => false, 'defaultunit' => HOURSECS]);
+        $mform->addElement(
+            'duration',
+            $p . 'releaseoffset',
+            get_string('releaseoffset', 'assignfeedback_modelsolution'),
+            ['optional' => false, 'defaultunit' => HOURSECS]
+        );
         $mform->setDefault($p . 'releaseoffset', (int) $this->get_config('releaseoffset'));
         $mform->hideIf($p . 'releaseoffset', $p . 'releasetype', 'neq', self::RELEASE_AFTERDUE);
         $mform->addElement('date_time_selector', $p . 'releasetime', get_string('releasetime', 'assignfeedback_modelsolution'));
         $mform->setDefault($p . 'releasetime', (int) $this->get_config('releasetime') ?: time() + WEEKSECS);
         $mform->hideIf($p . 'releasetime', $p . 'releasetype', 'neq', self::RELEASE_DATE);
-        $mform->addElement('advcheckbox', $p . 'requiresubmission',
-            get_string('requiresubmission', 'assignfeedback_modelsolution'));
+        $mform->addElement(
+            'advcheckbox',
+            $p . 'requiresubmission',
+            get_string('requiresubmission', 'assignfeedback_modelsolution')
+        );
         $mform->addHelpButton($p . 'requiresubmission', 'requiresubmission', 'assignfeedback_modelsolution');
         $mform->setDefault($p . 'requiresubmission', (int) $this->get_config('requiresubmission'));
-        $mform->addElement('date_time_selector', $p . 'hideafter', get_string('hideafter', 'assignfeedback_modelsolution'),
-            ['optional' => true]);
+        $mform->addElement(
+            'date_time_selector',
+            $p . 'hideafter',
+            get_string('hideafter', 'assignfeedback_modelsolution'),
+            ['optional' => true]
+        );
         $mform->addHelpButton($p . 'hideafter', 'hideafter', 'assignfeedback_modelsolution');
         $mform->setDefault($p . 'hideafter', (int) $this->get_config('hideafter'));
         foreach (['upload', 'releasetype', 'releaseoffset', 'releasetime', 'requiresubmission', 'hideafter'] as $name) {
@@ -168,8 +191,14 @@ class assign_feedback_modelsolution extends assign_feedback_plugin {
     public function data_preprocessing(&$defaultvalues) {
         $context = $this->assignment->get_context();
         $draftitemid = file_get_submitted_draft_itemid('assignfeedback_modelsolution_upload');
-        file_prepare_draft_area($draftitemid, $context ? $context->id : null, 'assignfeedback_modelsolution', self::FILEAREA, 0,
-            ['subdirs' => 0]);
+        file_prepare_draft_area(
+            $draftitemid,
+            $context ? $context->id : null,
+            'assignfeedback_modelsolution',
+            self::FILEAREA,
+            0,
+            ['subdirs' => 0]
+        );
         $defaultvalues['assignfeedback_modelsolution_upload'] = $draftitemid;
     }
 
@@ -182,8 +211,14 @@ class assign_feedback_modelsolution extends assign_feedback_plugin {
     public function save_settings(stdClass $formdata) {
         $p = 'assignfeedback_modelsolution_';
         if (isset($formdata->{$p . 'upload'})) {
-            file_save_draft_area_files($formdata->{$p . 'upload'}, $this->assignment->get_context()->id,
-                'assignfeedback_modelsolution', self::FILEAREA, 0, ['subdirs' => 0]);
+            file_save_draft_area_files(
+                $formdata->{$p . 'upload'},
+                $this->assignment->get_context()->id,
+                'assignfeedback_modelsolution',
+                self::FILEAREA,
+                0,
+                ['subdirs' => 0]
+            );
         }
         $this->save_release([
             'releasetype' => $formdata->{$p . 'releasetype'} ?? self::RELEASE_AFTERDUE,
@@ -349,7 +384,7 @@ class assign_feedback_modelsolution extends assign_feedback_plugin {
      */
     public function view_header() {
         global $USER, $OUTPUT;
-        if (!$this->get_files()) {
+        if (!$this->get_solution_files()) {
             return '';
         }
         $context = $this->assignment->get_context();
@@ -425,12 +460,16 @@ class assign_feedback_modelsolution extends assign_feedback_plugin {
      */
     protected function release_button(bool $release): string {
         global $OUTPUT;
-        $url = new moodle_url('/mod/assign/feedback/modelsolution/release.php',
-            ['cmid' => $this->assignment->get_course_module()->id, 'release' => (int) $release, 'sesskey' => sesskey()]);
+        $url = new moodle_url(
+            '/mod/assign/feedback/modelsolution/release.php',
+            ['cmid' => $this->assignment->get_course_module()->id, 'release' => (int) $release, 'sesskey' => sesskey()]
+        );
         $text = get_string($release ? 'dorelease' : 'dohide', 'assignfeedback_modelsolution');
         $confirm = new confirm_action(get_string($release ? 'confirmrelease' : 'confirmhide', 'assignfeedback_modelsolution'));
-        return html_writer::div($OUTPUT->render(new action_link($url, $text, $confirm, ['class' => 'btn btn-secondary'])),
-            'mt-2');
+        return html_writer::div(
+            $OUTPUT->render(new action_link($url, $text, $confirm, ['class' => 'btn btn-secondary'])),
+            'mt-2'
+        );
     }
 
     /**

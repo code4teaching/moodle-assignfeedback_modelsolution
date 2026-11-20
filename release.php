@@ -38,5 +38,7 @@ $assign = new assign($context, $cm, $course);
 $plugin = $assign->get_feedback_plugin_by_type('modelsolution');
 $plugin->set_release_by_hand($release);
 
-redirect(new moodle_url('/mod/assign/view.php', ['id' => $cm->id]),
-    get_string($release ? 'releaseddone' : 'hiddendone', 'assignfeedback_modelsolution'));
+redirect(
+    new moodle_url('/mod/assign/view.php', ['id' => $cm->id]),
+    get_string($release ? 'releaseddone' : 'hiddendone', 'assignfeedback_modelsolution')
+);

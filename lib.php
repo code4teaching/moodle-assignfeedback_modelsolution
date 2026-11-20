@@ -34,8 +34,15 @@
  * @param array $options
  * @return bool false if the file is not found or not allowed
  */
-function assignfeedback_modelsolution_pluginfile($course, $cm, context $context, $filearea, $args, $forcedownload,
-        array $options = []) {
+function assignfeedback_modelsolution_pluginfile(
+    $course,
+    $cm,
+    context $context,
+    $filearea,
+    $args,
+    $forcedownload,
+    array $options = []
+) {
     global $CFG;
     if ($context->contextlevel != CONTEXT_MODULE || $filearea !== 'modelsolution') {
         return false;
